@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Quote Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .mainform {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+    }
+
+    h3 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    select {
+      margin-top: 5px;
+    }
+
+    input[type="submit"] {
+      margin-top: 20px;
+      background-color: #45a049;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="mainform">
+    <form id="quoteForm" onsubmit="event.preventDefault(); submitForm();">
+
+      <center>
+        <h3>Vehicle Quote Generator</h3>
+      </center>
+
+      <div>
+        <label for="userName">Name:</label>
+        <input type="text" id="userName" name="userName"  placeholder="Enter your name.." required />
+      </div><br>
+      <div>
+        <label for="userEmail">Email:</label>
+        <input type="email" id="userEmail" name="userEmail" placeholder="Enter your email id.." required />
+      </div><br>
+
+      <label for="VehicleName">Vehicle Name:</label>
+      <select id="VehicleName" name="VehicleName"  onchange="populateModels()">
+        <option value="">Select a Vehicle Name</option>
+        <option value="Honda">Honda</option>
+        <option value="Toyota">Toyota</option>
+        <option value="BMW">BMW</option>
+        
+          <option value="Audi">Audi</option>
+        
+      </select>
+      <br><br>
+      <label for="VehicleModel">Model:</label>
+      <select id="VehicleModel" name="VehicleModel">
+        <option value="">Select a Model</option>
+      </select>
+      <br><br>
+      <script>
+        function populateModels() {
+          var vehicleNameSelect = document.getElementById("VehicleName");
+          var vehicleModelSelect = document.getElementById("VehicleModel");
+          var vehicleName = vehicleNameSelect.value;
+
+          // Clear previous options
+          vehicleModelSelect.innerHTML = "";
+
+          if (vehicleName === "Honda") {
+            addOption(vehicleModelSelect, "Honda City");
+            addOption(vehicleModelSelect, "Honda Civic");
+            addOption(vehicleModelSelect, "Honda Amaze");
+
+          } else if (vehicleName === "Toyota") {
+            addOption(vehicleModelSelect, "Corolla");
+            addOption(vehicleModelSelect, "Toyota Yaris");
+            addOption(vehicleModelSelect, "Toyota Fortuner");
+
+          } else if (vehicleName === "BMW") {
+            addOption(vehicleModelSelect, "X7");
+            addOption(vehicleModelSelect, "XM");
+            addOption(vehicleModelSelect, "7-Series");
+          }
+          
+          else if (vehicleName === "Audi") {
+              addOption(vehicleModelSelect, "RS5");
+              addOption(vehicleModelSelect, "RS Q8");
+              addOption(vehicleModelSelect, "Q7");
+            }
+          
+          
+          
+        }
+
+        function addOption(selectElement, optionText) {
+          var option = document.createElement("option");
+          option.text = optionText;
+          selectElement.add(option);
+        }
+      </script>
+
+      <label for="vehicleType">Vehicle Type:</label>
+      <select id="vehicleType" name="vehicleType" onchange="populateAges()">
+        <option value="">Select a Vehicle Type</option>
+        <option value="New">New</option>
+        <option value="Existing">Existing</option>
+      </select>
+      <br><br>
+      <label for="vehicleAge">Vehicle Age:</label>
+      <select id="vehicleAge" name="vehicleAge">
+        <option value="">Select an Age</option>
+      </select>
+
+      <br><br>
+      <script>
+        function populateAges() {
+          var vehicleTypeSelect = document.getElementById("vehicleType");
+          var vehicleAgeSelect = document.getElementById("vehicleAge");
+          var vehicleType = vehicleTypeSelect.value;
+
+          // Clear previous options
+          vehicleAgeSelect.innerHTML = "";
+
+          if (vehicleType === "New") {
+            addOption(vehicleAgeSelect, "0");
+          } else if (vehicleType === "Existing") {
+            for (var i = 1; i <= 6; i++) {
+              addOption(vehicleAgeSelect, i.toString());
+            }
+          }
+        }
+
+        function addOption(selectElement, optionText) {
+          var option = document.createElement("option");
+          option.text = optionText;
+          selectElement.add(option);
+        }
+      </script>
+
+      <label for="vehicleCoverage">Vehicle Coverage:</label>
+      <select id="vehicleCoverage" name="vehicleCoverage">
+        <option value="">Select Vehicle Coverage</option>
+        <option value="Comprehensive">Comprehensive</option>
+        <option value="Liability">Liability</option>
+      </select>
+<br>
+<br>
+
+
+
+<div>
+        <label for="quoteGenerateDate">Select a Date:</label>
+        <input type="date" id="quoteGenerateDate" name="quoteGenerateDate" required />
+      </div><br>
+
+
+      <center>
+        <div>
+          <input type="submit" value="Calculate Quote" />
+        </div>
+      </center>
+    </form>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    function submitForm() {
+      var form = document.getElementById("quoteForm");
+      var formData = new FormData(form);
+
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          document.getElementById("quoteForm").reset();
+          document.getElementById("result").innerHTML = xhr.responseText;
+        }
+      };
+      xhr.open("POST", "calculate", true);
+      xhr.send(formData);
+    }
+  </script>
+</body>
+
+</html>

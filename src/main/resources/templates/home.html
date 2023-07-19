@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Include the Font Awesome CSS library -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    
+    .sidebar {
+      height: 100%;
+      width: 250px;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      background: linear-gradient(to bottom, #4000BF, #990066);
+      color: #fff;
+      overflow-x: hidden;
+      padding-top: 60px;
+    }
+    
+    .sidebar a {
+      padding: 12px 16px;
+      text-decoration: none;
+      font-size: 18px;
+      color: #fff;
+      display: block;
+    }
+    
+    .sidebar a:hover {
+      background-color: #0056b3;
+    }
+    
+    .main {
+      margin-left: 250px;
+      padding: 16px;
+    }
+    
+    .heading {
+      font-size: 24px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #fff;
+      padding-bottom: 10px;
+      color: #fff;
+    }
+    
+    .navbar {
+      background-color: #f8f9fa;
+      color: #333;
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 250px;
+      height: 60px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    
+    .navbar a {
+      padding: 0 16px;
+      text-decoration: none;
+      font-size: 18px;
+      color: #333;
+      display: inline-block;
+    }
+    
+    .navbar a:hover {
+      background-color: #ddd;
+      color: #333;
+    }
+    
+    .sidebar-icon {
+      margin-right: 8px;
+    }
+    
+    .result {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+    }
+    
+    @media screen and (max-width: 600px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      .sidebar a {
+        text-align: center;
+        padding: 10px;
+        display: inline-block;
+        width: 50%;
+      }
+      .main {
+        margin-left: 0;
+      }
+      
+      .navbar {
+        left: 0;
+      }
+    }
+    
+    .heading {
+      margin-top: -40px;
+    }
+    
+    #quote-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+    
+    #email-field {
+      width: 300px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    
+    #get-quote-button {
+      width: 150px;
+      padding: 10px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    
+    #get-quote-button:hover {
+      background-color: #45a049;
+    }
+
+    .download-options {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .download-options a {
+      display: inline-block;
+      margin: 5px;
+    }
+    
+    /* Styling for the download links */
+    a#download-excel,
+    a#download-pdf {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    
+    /* Hover effect */
+    a#download-excel:hover,
+    a#download-pdf:hover {
+      background-color: #45a049;
+    }
+    
+    /* Styling for visited links */
+    a#download-excel:visited,
+    a#download-pdf:visited {
+      color: #ffffff;
+    }
+    
+    @media print {
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+      
+      td, th {
+        word-wrap: break-word;
+      }
+    }
+  </style>
+  
+  <script>
+    $(document).ready(function() {
+      $(".sidebar a").click(function(e) {
+        e.preventDefault();
+        var url = $(this).attr("href");
+        if (url === '#') {
+          $(".main").html("<h2>Welcome to the Vehicle Quote Generator Website.</h2>");
+          $(".download-options").hide(); // Hide download options
+        } else if (url === 'extract-quote') {
+          $(".main").html(`
+           <center> <h2>Extract Quote Data</h2></center>
+            <form id="quote-form">
+              <input type="email" id="email-field" placeholder="Enter your email">
+              <button id="get-quote-button">Get Quote Data</button>
+            </form>
+            <div id="quote-data"></div>
+          `);
+          $(".download-options").hide(); // Hide download options
+        } else {
+          $(".sidebar a").removeClass("active");
+          $(this).addClass("active");
+          $.get(url, function(data) {
+            $(".main").html(data);
+            $(".download-options").hide(); // Hide download options
+          });
+        }
+      });
+
+      $(document).on('click', '#get-quote-button', function(e) {
+        e.preventDefault();
+        var email = $("#email-field").val();
+        $.get("/quote?email=" + email, function(data) {
+          $("#quote-data").html(data);
+          $(".download-options").html(`
+            <a href="#" id="download-excel">Download in Excel</a>
+            <a href="#" id="download-pdf">Download in PDF</a>
+          `);
+          $(".download-options").show(); // Show download options
+        });
+      });
+
+      $(document).on('click', '#download-excel', function(e) {
+        e.preventDefault();
+        const table = document.querySelector('#quote-data table');
+        const worksheet = XLSX.utils.table_to_sheet(table);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'quote_data.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+
+      $(document).on('click', '#download-pdf', function(e) {
+    	  e.preventDefault();
+    	  const table = document.querySelector('#quote-data table');
+
+    	  // Adjust table width to fit within the PDF page
+    	  const originalTableWidth = table.style.width;
+    	  table.style.width = '100%';
+
+    	  const options = {
+    	    filename: 'quote_data.pdf',
+    	   
+    	    html2canvas: { scale: 2 },
+    	    jsPDF: { unit: 'pt', format: 'a2', orientation: 'portrait' },
+    	  };
+
+    	  html2pdf()
+    	    .set(options)
+    	    .from(table)
+    	    .save()
+    	    .then(() => {
+    	      // Reset the table width after generating the PDF
+    	      table.style.width = originalTableWidth;
+    	    });
+    	});
+
+    });
+  </script>
+</head>
+<body>
+  <div class="sidebar">
+    <h2 class="heading">Vehicle Quote App</h2>
+  
+    <a href="#" class="active"><i class="fas fa-home sidebar-icon"></i>Home</a>
+    <a href="form"><i class="fas fa-plus sidebar-icon"></i>Create New Quote</a>
+    <a href="extract-quote"><i class="fas fa-file-export sidebar-icon"></i>Extract Quote</a>
+  </div>
+  
+  <div class="navbar">
+    <a href="about">About</a>
+  </div>
+  <br><br>
+  <div class="main">
+    <h2>Welcome to the Vehicle Quote Generator Website.</h2>
+  </div>
+  <div class="download-options"></div>
+</body>
+</html>
